@@ -698,8 +698,15 @@ class CaptureManager:
         current_iface = {}
         for line in output.splitlines():
             line = line.strip()
-            if line.startswith('phy#'):
-                current_phy = line.rstrip()
+            if line.startswith('phy#') or line.startswith('Unnamed/'):
+                # Close out the current interface so that attribute lines of
+                # the next block (e.g. a P2P-device wdev with no netdev) are
+                # not attributed to it.
+                if current_iface.get('name'):
+                    interfaces.append(current_iface)
+                current_iface = {}
+                if line.startswith('phy#'):
+                    current_phy = line.rstrip()
             elif line.startswith('Interface '):
                 if current_iface.get('name'):
                     interfaces.append(current_iface)
